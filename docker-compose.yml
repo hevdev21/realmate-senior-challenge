@@ -1,0 +1,72 @@
+x-dev-volumes: &dev-volumes
+  volumes:
+    - ./src:/app/src
+    - ./data:/app/data
+    - ./pyproject.toml:/app/pyproject.toml
+    - ./.entrypoints/django-entrypoint.sh:/django-entrypoint.sh
+    - ./.entrypoints/celery-worker-entrypoint.sh:/celery-worker-entrypoint.sh
+    - ./.entrypoints/celery-beat-entrypoint.sh:/celery-beat-entrypoint.sh
+
+x-base: &base
+  environment:
+    ENVIRONMENT: ${ENVIRONMENT:-production}
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+    DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
+    DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
+    POSTGRES_DB: ${POSTGRES_DB:-realmate}
+    POSTGRES_USER: ${POSTGRES_USER:-realmate}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-realmate}
+    POSTGRES_HOST: db
+    POSTGRES_PORT: 5432
+    REDIS_URL: redis://redis:6379/0
+    DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+    PYTHONPATH: /app/src
+  depends_on:
+    - db
+    - redis
+
+services:
+  app:
+    <<: [*base, *dev-volumes]
+    build: .
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  celery-worker:
+    <<: [*base, *dev-volumes]
+    build: .
+    entrypoint: ["sh", "/celery-worker-entrypoint.sh"]
+    restart: unless-stopped
+
+  celery-beat:
+    <<: [*base, *dev-volumes]
+    build: .
+    entrypoint: ["sh", "/celery-beat-entrypoint.sh"]
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    container_name: realmate-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-realmate}
+      POSTGRES_USER: ${POSTGRES_USER:-realmate}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-realmate}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4.2
+    container_name: realmate-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redis_data:

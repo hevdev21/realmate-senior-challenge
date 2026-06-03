@@ -1,0 +1,47 @@
+[project]
+name = "realmate-ai"
+version = "0.1.0"
+description = "Sistema de mensageria com IA para imobiliária"
+requires-python = ">=3.11"
+dependencies = [
+    "django>=5.0,<6.0",
+    "psycopg2-binary>=2.9",
+    "python-dotenv>=1.0",
+    "openai>=1.0",
+    "celery>=5.4",
+    "redis>=5.0",
+]
+
+[dependency-groups]
+dev = ["watchdog>=6.0.0"]
+typecheck = [
+    "mypy[faster-cache]==1.15.0",
+    "types-requests==2.32.0.20250306",
+    "celery-types==0.23.0",
+    "django-types==0.20.0",
+]
+
+[tool.mypy]
+explicit_package_bases = true
+packages = "src"
+namespace_packages = true
+mypy_path = ["src"]
+allow_redefinition = true
+ignore_missing_imports = true
+exclude = ["manage.py", "/migrations/*"]
+plugins = []
+enable_error_code = ["possibly-undefined"]
+
+disallow_untyped_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+show_error_codes = true
+warn_unused_ignores = false
+
+disallow_incomplete_defs = true
+disallow_untyped_decorators = false
+disallow_any_unimported = false
+
+[tool.uv]
+default-groups = ["dev", "typecheck"]

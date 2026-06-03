@@ -1,0 +1,42 @@
+[
+  {
+    "pergunta": "Quais documentos são necessários para alugar um imóvel?",
+    "resposta": "Para alugar é preciso apresentar: RG e CPF (ou CNH), comprovante de renda (últimos 3 contracheques ou declaração de IR), comprovante de residência atual, certidão de casamento (se aplicável) e carta de referência pessoal ou comercial. Para empresas, adicionar CNPJ e contrato social."
+  },
+  {
+    "pergunta": "Qual o valor da taxa de corretagem?",
+    "resposta": "A taxa de corretagem corresponde a um mês de aluguel, paga no ato da assinatura do contrato. Para imóveis vendidos, a comissão é de 6% sobre o valor de venda, negociada entre as partes."
+  },
+  {
+    "pergunta": "Como funciona o processo de visita aos imóveis?",
+    "resposta": "As visitas são agendadas de segunda a sábado, das 8h às 18h. Basta entrar em contato conosco informando o imóvel de interesse e horário desejado. Um corretor acompanha a visita. Não há custo para agendar ou realizar a visita."
+  },
+  {
+    "pergunta": "Quanto tempo leva para aprovar o cadastro?",
+    "resposta": "A análise de cadastro leva em média 2 a 3 dias úteis após a entrega de toda a documentação. Em alguns casos pode levar até 5 dias úteis, dependendo da análise de crédito e consultas aos órgãos de proteção ao crédito."
+  },
+  {
+    "pergunta": "É preciso ter fiador para alugar?",
+    "resposta": "Não obrigatoriamente. Aceitamos três modalidades de garantia: (1) fiador com imóvel próprio na mesma cidade, (2) seguro-fiança (equivalente a 3 meses de aluguel), ou (3) depósito caução de até 3 meses de aluguel. O inquilino escolhe a opção mais adequada."
+  },
+  {
+    "pergunta": "Como funciona o pagamento do aluguel?",
+    "resposta": "O boleto do aluguel é gerado todo dia 5 de cada mês, com vencimento no dia 10. Pagamentos após o vencimento têm multa de 2% mais juros de mora de 0,33% ao dia. O boleto pode ser pago em qualquer banco, casa lotérica ou aplicativo."
+  },
+  {
+    "pergunta": "Posso fazer reformas no imóvel alugado?",
+    "resposta": "Reformas estruturais exigem autorização prévia por escrito do proprietário. Pequenas alterações como pintura e reparos simples podem ser feitas sem autorização, desde que o imóvel seja devolvido nas condições originais ao final do contrato."
+  },
+  {
+    "pergunta": "Qual a multa para quebra de contrato?",
+    "resposta": "A multa para rescisão antecipada corresponde a 3 meses de aluguel proporcionais ao tempo restante de contrato. Por exemplo, se faltam 12 meses para encerrar o contrato de 36 meses e o aluguel é R$ 2.000, a multa é de R$ 2.000 × 3 × (12/36) = R$ 2.000."
+  },
+  {
+    "pergunta": "Como funciona a renovação do contrato?",
+    "resposta": "O contrato inicial tem vigência de 36 meses. Próximo ao vencimento, enviamos uma proposta de renovação com o reajuste baseado no IGP-M (ou outro índice acordado). O inquilino tem 30 dias para manifestar interesse em renovar. A taxa de renovação é de meio mês de aluguel."
+  },
+  {
+    "pergunta": "Aceitam animais de estimação?",
+    "resposta": "Aceitamos animais de estimação mediante assinatura de um termo de responsabilidade, onde o inquilino se compromete a manter a limpeza e arcar com eventuais danos causados pelo pet. Não é cobrada taxa extra, mas é obrigatório manter vacinação e vermifugação em dia. Raças consideradas agressivas podem ser recusadas a critério do proprietário."
+  }
+]

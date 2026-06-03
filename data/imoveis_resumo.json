@@ -1,0 +1,82 @@
+[
+  {
+    "tipo_negocio": "aluguel",
+    "preco": 2200,
+    "quartos": 2,
+    "bairro": "Espinheiro",
+    "endereco": "Rua do Espinheiro, 340",
+    "descricao": "Apartamento com 2 quartos, sala ampla, cozinha planejada e área de serviço. Próximo ao Shopping Paço Alfândega e Praça do Espinheiro. Prédio com portaria 24h. ref: C011"
+  },
+  {
+    "tipo_negocio": "venda",
+    "preco": 720000,
+    "quartos": 3,
+    "bairro": "Apipucos",
+    "endereco": "Estrada de Apipucos, 1200",
+    "descricao": "Casa com 3 suítes, piscina, jardim amplo e churrasqueira. Condomínio fechado com segurança 24h. Silêncio e contato com a natureza. Aceita financiamento. ref: C012"
+  },
+  {
+    "tipo_negocio": "aluguel",
+    "preco": 1500,
+    "quartos": 1,
+    "bairro": "Ilha do Leite",
+    "endereco": "Rua José Osório, 55",
+    "descricao": "Studio mobiliado em prédio novo com portaria 24h e academia. Ideal para profissionais que buscam conforto e praticidade na área central do Recife. ref: C013"
+  },
+  {
+    "tipo_negocio": "venda",
+    "preco": 950000,
+    "quartos": 4,
+    "bairro": "Várzea",
+    "endereco": "Rua da Harmonia, 723",
+    "descricao": "Casa ampla com 4 quartos sendo 2 suítes, escritório, piscina, churrasqueira e quintal com 500m². Garagem para 3 carros. Próximo à UFPE. ref: C014"
+  },
+  {
+    "tipo_negocio": "aluguel",
+    "preco": 2800,
+    "quartos": 2,
+    "bairro": "Aflitos",
+    "endereco": "Rua dos Aflitos, 200",
+    "descricao": "Apartamento com 2 suítes, sacada com vista, cozinha americana e varanda gourmet. Prédio com piscina, sauna e salão de festas. 1 vaga coberta. ref: C015"
+  },
+  {
+    "tipo_negocio": "venda",
+    "preco": 1500000,
+    "quartos": 3,
+    "bairro": "Jaqueira",
+    "endereco": "Rua da Jaqueira, 450",
+    "descricao": "Cobertura duplex com 3 suítes, terraço com vista panorâmica, piscina privativa e churrasqueira. Acabamento de alto padrão. 2 vagas de garagem. ref: C016"
+  },
+  {
+    "tipo_negocio": "aluguel",
+    "preco": 1100,
+    "quartos": 1,
+    "bairro": "Derby",
+    "endereco": "Av. Agamenon Magalhães, 1800",
+    "descricao": "Kitnet mobiliada ideal para estudante ou profissional. Próximo a hospitais, faculdades e comércio. Ponto de ônibus na porta. Contrato flexível. ref: C017"
+  },
+  {
+    "tipo_negocio": "venda",
+    "preco": 480000,
+    "quartos": 2,
+    "bairro": "Casa Amarela",
+    "endereco": "Rua Padre Lemos, 88",
+    "descricao": "Casa com 2 quartos, sala, cozinha, quintal e garagem. Bairro tranquilo com comércio local abundante. Próximo ao Mercado de Casa Amarela. ref: C018"
+  },
+  {
+    "tipo_negocio": "aluguel",
+    "preco": 3500,
+    "quartos": 3,
+    "bairro": "Madalena",
+    "endereco": "Rua Real da Torre, 500",
+    "descricao": "Apartamento com 3 quartos sendo 1 suíte, sala e jantar integrados, cozinha ampla, área de serviço e sacada. 2 vagas de garagem. ref: C019"
+  },
+  {
+    "tipo_negocio": "venda",
+    "preco": 390000,
+    "quartos": 1,
+    "bairro": "Ilha do Retiro",
+    "endereco": "Rua do Futuro, 150",
+    "descricao": "Flat com 1 quarto, banheiro, sala integrada com cozinha americana e varanda. Prédio com piscina, academia e salão de jogos. Próximo ao Estádio da Ilha. ref: C020"
+  }
+]

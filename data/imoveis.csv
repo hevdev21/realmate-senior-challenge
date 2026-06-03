@@ -1,0 +1,11 @@
+tipo_negocio,preco,quartos,bairro,endereco,descricao
+aluguel,2500,2,Boa Viagem,"Rua dos Navegantes, 150","Apartamento com 2 quartos, sala ampla, cozinha planejada e varanda. Próximo ao Shopping Recife e praia. Condomínio com piscina e academia. codigo:IMV-001"
+venda,850000,4,Casa Forte,"Rua do Futuro, 512","Casa em condomínio fechado com 4 suítes, jardim, piscina e churrasqueira. Ótimo estado de conservação. Bairro nobre e tranquilo. codigo:IMV-002"
+aluguel,1800,1,Graças,"Rua das Graças, 87","Apartamento tipo studio, mobiliado, pronto para morar. Prédio com portaria 24h e câmeras. Ideal para estudante ou profissional solo. codigo:IMV-003"
+venda,1200000,3,Pina,"Av. Boa Viagem, 3000","Cobertura duplex com vista para o mar. 3 suítes, terraço com ofurô, churrasqueira e lavabo. 2 vagas de garagem. codigo:IMV-004"
+aluguel,3200,3,Setúbal,"Rua Alberto de Oliveira, 45","Casa com 3 quartos sendo 1 suíte, quintal com árvores frutíferas, garagem para 2 carros. Ótima localização. codigo:IMV-005"
+venda,420000,2,Rosarinho,"Rua do Rosarinho, 233","Apartamento com 2 quartos, um deles suíte, sala de estar e jantar integradas, cozinha americana. Prédio com garagem coberta. codigo:IMV-006"
+aluguel,900,1,Boa Vista,"Rua da Aurora, 1001","Kitnet mobiliada, condomínio incluso no valor. Próximo ao centro, comércio e transporte público. Ideal para quem busca praticidade. codigo:IMV-007"
+venda,580000,3,Tamarineira,"Rua General Manoel Rabelo, 500","Apartamento com 3 quartos, 2 banheiros, sala ampla com sacada. Prédio bem cuidado com portaria 24h. Próximo ao Hospital Português. codigo:IMV-008"
+aluguel,4500,4,Piedade,"Rua da Praia, 88","Casa com 4 suítes, piscina, churrasqueira, salão de festas. A 200m da praia. Garagem para 4 carros. Excelente para famílias grandes. codigo:IMV-009"
+venda,350000,1,Recife Antigo,"Rua do Bom Jesus, 55","Flat com vista para o Rio Capibaribe. 1 quarto, banheiro, cozinha compacta e sala integrada. Prédio histórico revitalizado. codigo:IMV-010"
