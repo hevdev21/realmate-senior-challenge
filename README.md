@@ -1,117 +1,190 @@
-# Desafio Dev Sênior — Sistema de Mensageria com IA
+# Desafio Técnico — Desenvolvedor Sênior Backend
 
-## Contexto
+## Sistema de Mensageria com IA para Busca de Imóveis
 
-A **Realmate** está construindo um assistente de IA para atendimento de clientes em uma
-imobiliária. O assistente conversa com potenciais compradores e inquilinos via WhatsApp,
-entende o que eles buscam e pesquisa imóveis no banco de dados para oferecer opções
-compatíveis.
+## 1. Contexto
 
-Você é responsável por construir o backend desse sistema.
+A **Realmate** está construindo um assistente de IA para atendimento de clientes de imobiliárias.
 
-## O que já está pronto
+Esse assistente conversa com potenciais compradores e inquilinos via WhatsApp, entende o que eles estão buscando, consulta uma base de imóveis e responde com opções compatíveis. Ele também deve conseguir tirar dúvidas frequentes sobre a imobiliária, como documentos necessários, taxas, horários de atendimento e procedimentos.
+
+Você será responsável por construir o backend desse sistema.
+
+Este desafio simula uma parte real do tipo de problema que enfrentamos na Realmate: integrar IA, regras de negócio, mensageria, persistência, processamento assíncrono e modelagem de domínio de forma simples, sustentável e extensível.
+
+---
+
+## 2. O que queremos avaliar
+
+Este desafio não avalia apenas se você consegue fazer uma feature funcionar.
+
+Nosso foco principal é entender sua capacidade de:
+
+- projetar uma aplicação backend de ponta a ponta;
+- modelar dados e entidades de domínio;
+- separar responsabilidades entre views, tasks, services, models, integrações e regras de negócio;
+- decidir quais abstrações fazem sentido e quais seriam overengineering;
+- construir um fluxo assíncrono com idempotência e consistência;
+- desenhar tools para IA de forma segura, previsível e evolutiva;
+- estruturar uma base de código que possa crescer sem precisar ser reescrita;
+- justificar tecnicamente suas decisões.
+
+Um script monolítico pode resolver o problema com os dados atuais, mas dificilmente sustentaria a evolução do produto. Ao mesmo tempo, uma arquitetura excessivamente abstrata para um domínio pequeno também pode ser um sinal ruim.
+
+Queremos ver equilíbrio: **clareza, simplicidade, separação de responsabilidades e capacidade de evolução**.
+
+---
+
+## 3. Formato da Entrega
+
+Você deve entregar:
+
+1. Código fonte da aplicação com testes unitários.
+2. Um documento `ARCHITECTURE.md` explicando suas principais decisões. (ou pequenos arquivos docs/ARCHITECTURE_XYZ.md separando os contextos)
+
+Procure justificar as escolhas que você fez durante o desenvolvimento. Por exemplo, ao criar um serviço, detalhe qual parte do domínio ele cobre. Mostre também por que organizou os apps, models ou fluxos dessa forma e como suas decisões contribuem para a clareza, sustentabilidade e evolução do projeto.
+
+---
+
+## 4. O que já está pronto
 
 Antes de iniciar, verifique os arquivos fornecidos:
 
-- `[docker-compose.yml](./docker-compose.yml)` — sobe o PostgreSQL e o Redis.
-- `[Dockerfile](./Dockerfile)` — imagem Docker do backend (opcional).
-- `[pyproject.toml](./pyproject.toml)` — dependências do projeto (gerenciado por **uv**).
-- `[src/config/](./src/config/)` — projeto Django esqueleto com conexão ao banco
-estabelecida, **sem apps criados**.
-- `[data/imoveis.csv](./data/imoveis.csv)` — 10 imóveis em CSV.
-- `[data/imoveis_resumo.json](./data/imoveis_resumo.json)` — 10 imóveis **diferentes**
-em JSON.
-- `[data/perguntas_frequentes.json](./data/perguntas_frequentes.json)` — 10 perguntas
-e respostas sobre a imobiliária.
+- `docker-compose.yml` — sobe PostgreSQL e Redis.
+- `Dockerfile` — imagem Docker do backend.
+- `pyproject.toml` — dependências do projeto, gerenciado por `uv`.
+- `src/config/` — projeto Django esqueleto, com conexão ao banco estabelecida, sem apps criados.
+- `data/imoveis.csv` — 10 imóveis em CSV.
+- `data/imoveis_resumo.json` — 10 imóveis diferentes em JSON.
+- `data/perguntas_frequentes.json` — 10 perguntas e respostas sobre a imobiliária.
 
-## Objetivo do Projeto
+Esse repositório contém a configuração mínima de uma aplicação Django com containers, com banco de dados, Redis e um Celery Worker.
+Você deve construir a aplicação a partir desse esqueleto. O código fonte da aplicação deve estar em `src/`.
 
-Você deve construir uma IA capaz de conversar com os clientes da imobiliária, encontrar
-imóveis para eles e tirar dúvidas sobre a imobiliária. A IA deve manter uma conversa
-com o cliente, buscar imóveis no banco de dados e consultar as perguntas frequentes.
+---
 
-Você deve construir uma aplicação Django tipada com mypy.
+## 5. Objetivo do projeto
 
-## Restrições na busca de imóveis
+Você deve construir uma aplicação Django capaz de:
 
-- Se o cliente informar o **código do imóvel**, a IA deve ser capaz de encontrar
-diretamente.
-- Se o cliente **não** tem o código, a IA só deve buscar imóveis quando tiver no mínimo os seguintes campos. Se algum desses campos não foi informado, a IA deve perguntar ao cliente antes de buscar:
-  - **preço mínimo**
-  - **bairro**
-  - **tipo de transação** (aluguel/venda).
-- A IA deve retornar **no máximo 2 imóveis por busca**. O cliente pode pedir mais
-opções — nesse caso a IA busca novamente trazendo outros imóveis que ainda não
-foram mostrados ao cliente.
-- A IA **nunca** deve sugerir um imóvel que já foi recomendado ao cliente na mesma
-conversa.
-- A IA deve ser capaz de responder sobre **características do imóvel** que estão na  
-descrição (ex: se aceita pets, se tem vaga de garagem, valor do condomínio). Se a  
-informação não estiver disponível, ela deve responder que não sabe.
+1. Receber mensagens de clientes via webhook.
+2. Persistir conversas e mensagens.
+3. Processar mensagens de forma assíncrona com Celery.
+4. Consolidar mensagens enviadas em sequência curta.
+5. Chamar uma IA com tools.
+6. Buscar imóveis no banco de dados.
+7. Tirar dúvidas frequentes sobre a imobiliária.
+8. Registrar quais imóveis foram recomendados em cada conversa.
+9. Disponibilizar uma API para consultar o histórico da conversa.
 
-## Premissas do negócio
+A aplicação deve ser tipada com `mypy`. As configurações já estão no `pyproject.toml`.
 
-- Todos os imóveis são da **mesma cidade** (Recife/PE).
-- Todos os imóveis e buscas são **residenciais** (não existem imóveis comerciais na base).
-- O cliente pode se referir ao imóvel pelo **código** ou por **características** (bairro, preço, tipo de transação, quantidade de quartos).
+---
 
-## Filtros da tool de busca
+## 6. Premissas de negócio
 
-A IA deve ser capaz de filtrar pelas seguintes características
+- Todos os imóveis são residenciais (nenhum cliente vai pedir imóveis comerciais).
+- Todos os imóveis estão na cidade de Recife/PE (nenhum cliente vai pedir imóveis em outras cidades).
+- O cliente pode se referir a um imóvel pelo código ou por características.
+- O telefone do cliente identifica uma conversa única.
+- Todos os telefones seguirão o formato `+5588999999999` (ddi + ddd + número).
+- A resposta da IA deve ser persistida no banco, mas não precisa ser enviada para nenhuma API externa.
+- Não é necessário frontend.
+- Não é necessário autenticação nas views ou endpoints.
+- A IA deve responder sempre em português brasileiro.
 
+---
 
-| Campo           | Operador                 | Obrigatório?                           |
-| --------------- | ------------------------ | -------------------------------------- |
-| código          | =                        | Sim, se os demais não forem informados |
-| tipo de negocio | = (aluguel / venda)      | Sim, se código não for informado       |
-| bairro          | =                        | Sim, se código não for informado       |
-| preço           | >=, <= (ou ambos juntos) | Sim, se código não for informado       |
-| quartos         | =                        | Não                                    |
+## 7. Requisitos funcionais
 
+### 7.1 Modelagem do banco de dados
 
-- Se o cliente fornecer código, os demais campos são dispensáveis.
-- Se o cliente não fornecer código, tipo de negocio, bairro e preço mínimo são
-obrigatórios.
-- ela deve conseguir buscar preço mínimo, preço máximo ou uma faixa de preço.
-- quartos é um filtro opcional adicional (exato).
+Modele as tabelas necessárias para representar, no mínimo:
 
-## O que você deve construir
+#### Imóveis
 
-### 1. Modelagem do banco de dados
+A tabela de imóveis deve conter todos os dados relevantes para busca e resposta, incluindo:
 
-Modele as tabelas necessárias para representar:
+- código do imóvel;
+- tipo de transação: aluguel ou venda;
+- bairro;
+- preço;
+- quantidade de quartos;
+- descrição;
+- demais campos que você considerar úteis;
+- origem da carga, se considerar relevante.
 
-- **Imóveis** — com todos os dados relevantes para busca, incluindo o código extraído
-da descrição em coluna própria.
-- **Conversas** — identificadas pelo telefone do cliente.
-- **Mensagens** — cada interação da conversa (cliente e assistente).
+O código do imóvel deve estar em coluna própria e deve ser único.
 
-Se achar necessário, você pode criar outros modelos.
+#### Conversas
 
+Uma conversa deve ser identificada pelo telefone do cliente.
+- telefone do cliente;
+- status: 'active' ou 'closed';
+- created_at;
+- last_message_at (seja ela do cliente ou do assistente);
+- imóveis recomendados ao longo da conversa;
+- mensagens;
 
+#### Mensagens
 
-### 2. Carga dos dados
+Cada interação da conversa deve ser persistida.
 
-Crie um sistema de carga que leia os arquivos `data/imoveis.csv` e
-`data/imoveis_resumo.json`, processe e insira os imóveis no banco de dados.
+As mensagens devem armazenar, no mínimo:
 
-Considere que:
+- conversa;
+- papel da mensagem: "customer" ou "assistant";
+- conteúdo;
+- timestamp;
+- identificador externo da mensagem.
 
-- Ambos contêm imóveis **diferentes** — devem ser mesclados em uma única tabela.
-- Novos formatos de arquivo podem surgir no futuro — sua solução deve ser extensível.
-- Cargas repetidas não devem duplicar registros (idempotência), usando o código do
-imóvel como chave de unicidade.
-- A carga deve ser **automatizada** e executada **todos os dias às 00:00 UTC**.
+> Você pode criar outros modelos se achar necessário.
 
-### 3. Webhook para receber mensagens
+---
 
-O sistema recebe diferentes tipos de evento pelo mesmo endpoint. Exemplos:
+### 7.2 Carga dos dados
 
-```
+Crie um sistema de carga que leia os arquivos:
+
+- `data/imoveis.csv`;
+- `data/imoveis_resumo.json`.
+
+Os dois arquivos contêm imóveis diferentes e devem ser mesclados em uma única tabela.
+
+A carga deve respeitar as seguintes regras:
+
+- cargas repetidas não devem duplicar registros;
+- o código do imóvel deve ser usado como chave de unicidade;
+- se o mesmo imóvel for carregado novamente, o registro existente deve ser atualizado ou ignorado de forma consistente;
+- a carga deve ser automatizada para executar todos os dias às `00:00 UTC`.
+
+#### Extensibilidade da carga
+
+Nos próximos meses, a Realmate pretende suportar novos formatos de imóveis, como:
+
+- XML de parceiros;
+- APIs REST de portais imobiliários;
+
+Sua solução deve ser desenhada para acomodar novos formatos com mudança mínima no código existente.
+
+Não exigimos que você implemente XML ou API REST agora. Porém, queremos conseguir entender com o mínimo de esforço possível, sem duplicar código e sem refatorar completamente o código existente.
+
+---
+
+### 7.3 Webhook para receber mensagens
+
+Implemente o endpoint:
+
+```http
 POST /webhook/message
 Content-Type: application/json
+```
 
-# Evento de mensagem — deve ser processado
+O sistema receberá diferentes tipos de evento pelo mesmo endpoint.
+
+#### Evento de mensagem
+
+```json
 {
   "event": "MESSAGE_RECEIVED",
   "content": {
@@ -121,8 +194,11 @@ Content-Type: application/json
     "timestamp": "2026-06-02T10:00:00Z"
   }
 }
+```
 
-# Outros eventos — devem ser ignorados (apenas retornar 200 OK)
+#### Exemplo de Evento que deve ser ignorado
+
+```json
 {
   "event": "MESSAGE_READ",
   "content": {
@@ -133,16 +209,17 @@ Content-Type: application/json
 }
 ```
 
-Regras do webhook:
+Regras:
 
-- Apenas eventos com `event: "MESSAGE_RECEIVED"` devem ser processados.
-- Eventos de outros tipos devem responder `200 OK` sem processamento.
-- O `message_id` é um UUID que garante idempotência.
-- Cada `user_phone_number` identifica uma conversa única.
-- Mensagens duplicadas (mesmo `message_id`) devem ser ignoradas silenciosamente, e retornar 200.
-- O processamento é **assíncrono**: o webhook deve validar e enfileirar a mensagem,  
-respondendo imediatamente na view. O processamento com IA ocorre via **Celery**.
-- A resposta do webhook deve seguir o formato:
+- apenas eventos com `event: "MESSAGE_RECEIVED"` devem ser processados;
+- outros eventos devem retornar `200 OK` sem processamento;
+- o `message_id` é um UUID usado para idempotência;
+- mensagens duplicadas devem ser ignoradas silenciosamente;
+- o webhook não deve processar a IA diretamente;
+- o webhook deve validar, persistir/enfileirar e responder rapidamente;
+- o processamento da IA deve acontecer via Celery.
+
+A resposta para mensagens aceitas deve seguir o formato:
 
 ```json
 {
@@ -151,57 +228,112 @@ respondendo imediatamente na view. O processamento com IA ocorre via **Celery**.
 }
 ```
 
+quando ignorado:
+
+```json
+{
+  "status": "ignored",
+  "message_id": "3287ac71-8b6b-4deb-a497-5b902676f097"
+}
+```
 
 
-### 🚨 Debounce de mensagens
+---
 
-Um cliente pode enviar duas mensagens quebradas rapidamente, como por exemplo, 'Oi' e 'bom dia'. Nesses casos, mensagens enviadas em até 10s devem gerar somente um processamento por parte da IA. 
+### 7.4 Debounce de mensagens
 
-Considere que o cliente, se passou 10s e não houve uma mensagem, o cliente não enviará mais nenhuma mensagem até a resposta da IA. Não haverá race-condition nesse sentido.
+Um cliente pode enviar mensagens quebradas rapidamente, por exemplo:
 
+```text
+Oi
+bom dia
+estou procurando um apartamento
+```
 
+Mensagens enviadas em até 10 segundos na mesma conversa devem gerar apenas um processamento por parte da IA.
 
-### 4. Processamento com IA
+Considere a seguinte premissa para este desafio:
 
-Integre com a **DeepSeek** (via SDK compatível com OpenAI) para processar as
-mensagens. Veja um exemplo em `[scripts/example_ia.py](./scripts/example_ia.py)`.
+> Se passaram 10 segundos sem nova mensagem do cliente, o cliente não enviará outra mensagem até receber a resposta da IA.
+
+Ou seja, você não precisa resolver todos os casos possíveis de race condition de um sistema real de produção.
+
+---
+
+### 7.5 Processamento com IA
+
+Integre com a **OpenAI**, usando o SDK oficial. Não utilize frameworks como LangChain, LangGraph, etc.
 
 A IA deve:
 
-1. Interpretar a mensagem do cliente.
-2. Se tiver informações suficientes (**tipo de negócio**, **bairro** e **preço**),
-  chamar a ferramenta de busca de imóveis.
-3. Se o cliente fornecer **apenas o código do imóvel**, pode buscar sem os outros
-  filtros.
-4. Se faltarem informações, **perguntar ao cliente** antes de buscar.
-5. Responder ao cliente com os imóveis encontrados de forma natural e objetiva.
-6. Ao recomendar imóveis, a IA deve **excluir os que já foram mostrados** ao cliente
-  em buscas anteriores na mesma conversa.
+1. Interpretar a mensagem do cliente e o histórico da conversa.
+2. Decidir se possui informações suficientes para buscar imóveis.
+3. Chamar a tool de busca quando necessário.
+4. Chamar a tool de perguntas frequentes quando necessário.
+5. Perguntar ao cliente quando faltarem informações obrigatórias.
+6. Responder de forma natural, objetiva.
+7. Nunca recomendar novamente um imóvel já recomendado na mesma conversa.
+8. Nunca inventar informações. Se não souber a resposta, deve perguntar ao cliente ou responder que não sabe.
 
-Você deve modelar as **ferramentas (tools)** que a IA pode chamar. São necessárias
-pelo menos duas ferramentas:
+---
 
-1. **Busca de imóveis** — para encontrar imóveis no banco de dados com base nos
-  filtros fornecidos pelo cliente. Deve contemplar os filtros descritos na seção
-   "Filtros da tool de busca".
-2. **Tirar dúvidas sobre a imobiliária** — para consultar as perguntas frequentes
-  (`data/perguntas_frequentes.json`) e responder o cliente sobre regras, taxas,
-   documentos e procedimentos da imobiliária.
+## 8. Tools da IA
 
-> A escolha do formato de cada tool e da implementação concreta é sua. Leve em conta o tamanho dos dados e contexto desse desafio para escolher a abordagem.
+Você deve modelar pelo menos duas tools:
 
-### 5. API de saída
+### 8.1 Tool de busca de imóveis
 
-Implemente o endpoint público para consulta:
+A IA deve conseguir buscar imóveis pelos seguintes filtros:
 
+
+| Campo             | Operador        | Obrigatório?                                   |
+| ----------------- | --------------- | ---------------------------------------------- |
+| código            | =               | Sim, se os demais filtros não forem informados |
+| tipo de transação | = aluguel/venda | Sim, se código não for informado               |
+| bairro            | =               | Sim, se código não for informado               |
+| preço             | >=, <= ou ambos | Sim, se código não for informado               |
+| quartos           | =               | Não                                            |
+
+
+Regras:
+
+- se o cliente fornecer código, os demais campos são dispensáveis;
+- se o cliente não fornecer código, `tipo de transação`, `bairro` e o preço mínimo (`<=`) são obrigatórios;
+- o sistema deve suportar preço mínimo, preço máximo ou faixa de preço;
+- quartos é um filtro opcional;
+- a IA deve retornar no máximo 2 imóveis por busca;
+- se o cliente pedir mais opções, a busca deve excluir imóveis já recomendados na conversa;
+- a decisão deve estar explicada no `ARCHITECTURE.md`.
+
+IMPORTANTE: A restrição de filtros mínimos deve ser determinística. Em hipótese alguma, a IA deve conseguir enviar imóveis se o cliente não preencheu os filtros obrigatórios.
+
+---
+
+### 8.2 Tool de perguntas frequentes
+
+A IA deve conseguir responder dúvidas sobre a imobiliária usando o arquivo:
+
+```text
+data/perguntas_frequentes.json
 ```
+- A IA não deve inventar regras da imobiliária. Se a informação não estiver disponível, ela deve responder que não sabe ou que não encontrou essa informação na base fornecida.
+
+Você pode escolher a estratégia de implementação considerando o tamanho do dataset. A escolha deve ser justificada. Evite overengineering.
+
+
+---
+
+## 9. API de saída
+
+Implemente o endpoint:
+
+```http
 GET /api/conversations/{user_phone}/messages
 ```
 
-Retorna o histórico de mensagens da conversa, ordenado da **mais antiga para a mais
-recente**.
+Ele deve retornar o histórico de mensagens da conversa, ordenado da mais antiga para a mais recente.
 
-Exemplo de resposta:
+Formato esperado:
 
 ```json
 {
@@ -215,100 +347,149 @@ Exemplo de resposta:
     },
     {
       "role": "assistant",
-      "content": "Olá! Temos algumas opções de apartamentos para alugar em Boa Viagem dentro desse valor. Encontrei 2 imóveis que podem atender você:\n\n1. **IMV-001** — Apartamento com 2 quartos, sala ampla, cozinha planejada e varanda. R$ 2.500/mês. Próximo ao Shopping Recife e praia. Condomínio com piscina e academia.\n\n2. **C011** — Apartamento com 2 quartos, sala ampla, cozinha planejada e área de serviço no Espinheiro. R$ 2.200/mês. Prédio com portaria 24h.\n\nGostaria de mais detalhes de algum deles ou quer que eu busque mais opções?",
+      "content": "Olá! Temos algumas opções de apartamentos para alugar em Boa Viagem dentro desse valor. Encontrei 2 imóveis que podem atender você...",
       "timestamp": "2026-06-02T10:00:05Z"
-    },
-    {
-      "role": "customer",
-      "content": "Me fale mais sobre o primeiro",
-      "timestamp": "2026-06-02T10:01:00Z"
-    },
-    {
-      "role": "assistant",
-      "content": "O **IMV-001** fica na Rua dos Navegantes, 150, Boa Viagem, a 3 quadras da praia. Tem 2 quartos, sala ampla, cozinha planejada e varanda. O condomínio é R$ 580/mês com piscina e academia. Aceita pets e tem 1 vaga de garagem coberta.",
-      "timestamp": "2026-06-02T10:01:03Z"
     }
   ]
 }
 ```
 
-> Este endpoint será usado por testes automatizados para validar o comportamento
-> do sistema. É muito importante que siga exatamente esse formato.
+Regras:
 
-## Regras de negócio
+- `user_phone` deve ser o telefone da conversa;
+- `properties_found` deve listar os códigos dos imóveis recomendados na conversa;
+- `messages` deve conter mensagens de cliente e assistente;
+- a ordenação deve ser cronológica, da mais antiga para a mais recente;
+- o formato deve ser seguido exatamente, pois será usado por testes automatizados.
 
-- O sistema deve atender **múltiplos clientes simultaneamente**, cada um identificado
-por seu número de telefone.
-- O processamento das mensagens é **assíncrono** via **Celery**. O webhook apenas
-valida o payload e enfileira o processamento.
-- Se o cliente enviar **duas ou mais mensagens em até 10 segundos** (mesma conversa),
-elas devem ser consolidadas e processadas como uma única mensagem. Mensagens muito
-próximas podem indicar digitação fragmentada.
-- A IA deve retornar **no máximo 2 imóveis por busca**. Se o cliente pedir mais
-opções, a IA busca novamente, **excluindo os imóveis já recomendados** na conversa.
-- Os resultados das buscas (imóveis encontrados) devem ser persistidos no banco de
-dados, vinculados à conversa e à mensagem do assistente que os gerou. Toda
-recomendação deve ficar registrada.
-- Uma única conversa pode ter múltiplas buscas (o cliente refina os critérios).
-- O histórico deve preservar a ordem cronológica das mensagens.
-- A IA deve responder em **português brasileiro**.
+---
 
-## Critérios de avaliação
+## 10. Regras de negócio consolidadas
 
-Sua solução será avaliada nos seguintes aspectos:
+- O sistema deve atender múltiplos clientes, cada um identificado por telefone.
+- Cada telefone representa uma conversa.
+- Mensagens duplicadas, identificadas pelo mesmo `message_id`, devem ser ignoradas.
+- O webhook deve responder rapidamente e não deve executar a IA diretamente.
+- O processamento deve ser assíncrono via Celery.
+- Mensagens do mesmo cliente enviadas em até 10 segundos devem ser consolidadas.
+- A IA só deve buscar imóveis quando houver dados suficientes.
+- Se faltar informação obrigatória, a IA deve perguntar antes de buscar.
+- A IA pode buscar diretamente se o cliente informar o código do imóvel.
+- A IA deve recomendar no máximo 2 imóveis por busca.
+- A IA não pode recomendar imóvel já recomendado na mesma conversa.
+- Toda recomendação deve ser persistida.
+- Uma conversa pode ter múltiplas buscas.
+- O histórico deve preservar a ordem das mensagens.
+- Informações não disponíveis sobre imóveis ou FAQ não devem ser inventadas.
 
-1. **Corretude funcional** — simularemos conversas com a IA via webhook e consultaremos o histórico pelo endpoint de saída para verificar se os filtros são respeitados, se a IA pergunta quando faltam informações, e se o retorno respeita o limite de 2 imóveis por busca.
-2. **Modelagem das tools** — avaliaremos como você estruturou as ferramentas de function calling para a IA: definição dos parâmetros, descrições, tipos, e a estratégia de exclusão de imóveis já recomendados.
-3. **Arquitetura Django** — avaliaremos a separação de responsabilidades entre apps, a modelagem do banco de dados, a aplicação de princípios de arquitetura, organização do código, e extensibilidade.
-4. **Type safety** — avaliaremos a cobertura de tipagem com mypy no código fonte, seguindo as configurações definidas no `pyproject.toml`.
+---
 
-## Possíveis dúvidas
+## IMPORTANTE: Tipagem
 
-- A resposta da IA nesse desafio será somente guardada no banco de dados. Não será enviada por uma API.
-- Não é necessário nenhum frontend para o desafio.
-- Não é necessário criar nenhuma espécie de autenticação nas views ou no webhook.
-- Considere que todos os telefones seguirão o formato '+5588999999999' (DDI + DDD + número 9 dígitos).
-
-## Setup
+O projeto deve passar em:
 
 ```bash
+uv run mypy src/
+```
+
+Queremos ver uso consciente de tipagem, especialmente em:
+
+- contratos das tools;
+- payloads do webhook;
+- services;
+- parsers/importadores;
+- integração com IA.
+
+Evite ao máximo `#type: ignore` em todo o código.
+
+## Documento `ARCHITECTURE.md`
+
+Este documento é parte obrigatória da avaliação. É nele que você deve explicar o porquê de cada decisão tomada. Sinta-se a vontada para incluir:
+- explicações de separação de domínios
+- criação de serviços
+- abordagens alternativas consideradas, e por que foram descartadas.
+
+ou qualquer outra decisão que você julgue relevante.
+
+## O que não esperamos
+
+Não esperamos que você implemente uma arquitetura artificialmente complexa. Não queremos uma bazuca para matar uma formiga.
+
+Você não precisa usar:
+
+- microservices;
+- event sourcing;
+- CQRS;
+- DDD completo e literal;
+- arquitetura hexagonal rígida;
+- LangChain;
+- LangGraph;
+- filas múltiplas;
+- cache distribuído sofisticado;
+- painel administrativo;
+- frontend.
+
+Você pode usar qualquer uma dessas abordagens se achar que faz sentido, mas o objetivo é que a arquitetura seja simples e faça sentido e seja proporcional ao tamanho do problema.
+
+---
+
+## 15. Setup
+
+```bash
+# configure OPENAI_API_KEY no .env antes
 cp .env.example .env
-# configure DEEPSEEK_API_KEY no .env
 docker compose up --build -d
 ```
 
-O Docker Compose sobe 5 serviços:
+O Docker Compose sobe os seguintes serviços:
 
 
-| Serviço         | Descrição                                                        |
-| --------------- | ---------------------------------------------------------------- |
-| `app`           | Django + runserver (auto-reload ao editar `.py`)                 |
-| `celery-worker` | Celery worker com watchmedo (restart automático ao editar `.py`) |
-| `celery-beat`   | Agendador de tarefas                                             |
-| `db`            | PostgreSQL 16                                                    |
-| `redis`         | Redis 7                                                          |
+| Serviço         | Descrição            |
+| --------------- | -------------------- |
+| `app`           | Django + runserver   |
+| `celery-worker` | Worker Celery        |
+| `celery-beat`   | Agendador de tarefas |
+| `db`            | PostgreSQL           |
+| `redis`         | Redis                |
 
 
 ### Comandos úteis
 
 ```bash
-# Ver logs de um serviço
+# Ver logs
 docker compose logs -f app
 docker compose logs -f celery-worker
 
-# Executar comandos Django
+# Rodar migrations
 docker compose exec app python src/manage.py makemigrations
 docker compose exec app python src/manage.py migrate
+
+# Carregar imóveis
 docker compose exec app python src/manage.py carregar_imoveis
 
 # Verificar tipos
 docker compose exec app uv run mypy src/
 
-# Rebuild após alterar dependências
+# Rodar testes
+docker compose exec app uv run pytest
+
+# Rebuild
 docker compose build --no-cache app
 
 # Parar tudo
 docker compose down
 ```
+
+---
+
+## 16. Observações finais
+
+Este desafio foi desenhado para avaliar senioridade técnica em um contexto próximo do que vivemos na Realmate.
+
+Não existe uma única arquitetura correta.
+
+O que queremos ver é sua capacidade de tomar decisões coerentes, implementar uma solução funcional, manter o código compreensível e explicar os trade-offs envolvidos.
+
+Na dúvida, prefira uma solução simples, bem separada, testável e fácil de evoluir.
 
 Boa sorte!
