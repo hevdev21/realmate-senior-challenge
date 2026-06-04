@@ -298,8 +298,8 @@ A IA deve conseguir buscar imóveis pelos seguintes filtros:
 Regras:
 
 - se o cliente fornecer código, os demais campos são dispensáveis;
-- se o cliente não fornecer código, `tipo de transação`, `bairro` e o preço mínimo (`<=`) são obrigatórios;
-- o sistema deve suportar preço mínimo, preço máximo ou faixa de preço;
+- se o cliente não fornecer código, `tipo de transação`, `bairro` e pelo menos um filtro de preço são obrigatórios;
+- o sistema deve suportar preço mínimo (piso, `>=`), preço máximo (teto, `<=`) ou faixa de preço (ambos);
 - quartos é um filtro opcional;
 - a IA deve retornar no máximo 2 imóveis por busca;
 - se o cliente pedir mais opções, a busca deve excluir imóveis já recomendados na conversa;
