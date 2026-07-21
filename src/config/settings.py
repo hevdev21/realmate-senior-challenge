@@ -8,7 +8,20 @@ SECRET_KEY = os.environ.get(
     "django-insecure-42n#jf8)j@k!u&*qwerty1234567890abcdefghijklmnop",
 )
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.github.dev',
+    'https://*.app.github.dev',
+    'http://localhost:8000',
+    'https://localhost:8000',
+]
+
+allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS", "*")
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(",") if host.strip()]
+
+csrf_origins_env = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+if csrf_origins_env:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_env.split(",")]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
