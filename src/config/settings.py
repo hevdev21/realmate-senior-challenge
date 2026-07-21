@@ -1,3 +1,4 @@
+from celery.schedules import crontab
 import os
 from pathlib import Path
 
@@ -30,7 +31,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "iamoveis"
+    "django_celery_beat",
+    "iamoveis",
 ]
 
 MIDDLEWARE = [
@@ -111,5 +113,23 @@ LOGGING = {
     "root": {
         "handlers": ["console"],
         "level": "INFO",
+    },
+}
+
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DATA_DIR = BASE_DIR / "data"
+
+IMOVEIS_JSON = DATA_DIR / "imoveis_resumo.json"
+
+IMOVEIS_CSV = DATA_DIR / "imoveis.csv"
+
+CELERY_BEAT_SCHEDULE = {
+    'importar-imoveis-diariamente-utc': {
+        'task': 'iamoveis.tasks.executar_carga_diaria_imoveis',
+        'schedule': crontab(hour=0, minute=0),
     },
 }
