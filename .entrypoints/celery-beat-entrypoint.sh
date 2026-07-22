@@ -3,4 +3,7 @@ set -e
 
 export PYTHONPATH="${PYTHONPATH}:${PWD}/src"
 
-exec celery -A config beat -l INFO
+exec celery \
+  -A config beat \
+  -l INFO \
+  --schedule=/tmp/celerybeat-schedule
