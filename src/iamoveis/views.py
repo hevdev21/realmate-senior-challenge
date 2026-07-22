@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.db import IntegrityError, transaction
 from .models import Conversa, Mensagem
+from .tasks import processar_mensagem_ia
 from .serializers import WebhookEnvelopeSerializer, MessageReceivedContentSerializer
 
 
@@ -39,6 +40,8 @@ class WebhookMessageView(APIView):
                 status=status.HTTP_200_OK,
             )
 
+        processar_mensagem_ia.delay(mensagem.id)
+        
         return Response(
             {"status": "accepted", "message_id": str(dados["message_id"])},
             status=status.HTTP_200_OK,
