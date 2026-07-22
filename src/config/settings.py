@@ -98,6 +98,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# OPEN AI
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", None)
+
 # --- Celery ---
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
