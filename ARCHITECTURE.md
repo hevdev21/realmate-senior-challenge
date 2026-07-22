@@ -16,7 +16,18 @@
 
 ## Webhook
 
- - Usando djando restframework com o padrão API View, implementei a view do WebhookMessageView seguindo o padrão do DRF som serializers para validação de dados, tambem isolei a parte de persistencia de dados para organização do projeto. 
+ - Usando djando restframework com o padrão API View, implementei a view do WebhookMessageView seguindo o padrão do DRF som serializers para validação de dados, tambem isolei a parte de persistencia de dados para organização do projeto.
+
+## Debounce de mensagens
+
+- Persistência da mensagem é imediata; a task de IA é agendada com atraso
+  de 10s (`apply_async(countdown=10)`).
+- Ao acordar, a task só processa se ainda for a última mensagem do
+  cliente na conversa — caso contrário, deixa a task da mensagem mais
+  recente cuidar (que já vê o histórico acumulado). Resolve o caso de
+  mensagens quebradas com um único processamento.
+- Sem lock distribuído: a premissa do desafio (cliente só envia nova
+  mensagem após resposta da IA) elimina a concorrência real entre tasks.
 
 ## Processamento de IA
 

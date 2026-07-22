@@ -40,7 +40,7 @@ class WebhookMessageView(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        processar_mensagem_ia.delay(mensagem.id)
+        processar_mensagem_ia.apply_async(args=[mensagem.id], countdown=10)
         
         return Response(
             {"status": "accepted", "message_id": str(dados["message_id"])},
