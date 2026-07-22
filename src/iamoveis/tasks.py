@@ -1,23 +1,33 @@
-import logging
-
 from celery import shared_task
-from django.conf import settings
-
 from iamoveis.services.importar_imoveis import ImportadorImoveisService
+from celery import group
+from django.conf import settings
+import logging
 
 logger = logging.getLogger(__name__)
 
+@shared_task
+def executar_importacao_imoveis(filepath, formato):
+    service = ImportadorImoveisService()
+    return service.importar(filepath, formato)
+
 
 @shared_task
-def executar_carga_diaria_imoveis():
-
-    logger.info("Iniciando carga")
-
+def importar_json():
     service = ImportadorImoveisService()
+    service.importar(settings.IMOVEIS_JSON, "json")
 
-    total = service.importar(
-        filepath=settings.IMOVEIS_JSON,
-        formato="json"
-    )
 
-    logger.info("%s imóveis importados", total)
+@shared_task
+def importar_csv():
+    service = ImportadorImoveisService()
+    service.importar(settings.IMOVEIS_CSV, "csv")
+
+@shared_task
+def executar_carga_diaria():
+    logger.info("Iniciando carga diária...")
+    group(
+        importar_json.s(),
+        importar_csv.s(),
+    ).apply_async()
+    logger.info("Carga diária enviada para processamento.")

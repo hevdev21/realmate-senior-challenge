@@ -1,6 +1,7 @@
 from celery.schedules import crontab
 import os
 from pathlib import Path
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -80,7 +81,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_PASSWORD_VALIDATORS: list[str] = []
 
 LANGUAGE_CODE = "pt-br"
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
 
@@ -116,12 +117,12 @@ LOGGING = {
     },
 }
 
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE = "America/Sao_Paulo"
 CELERY_ENABLE_UTC = True
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-DATA_DIR = BASE_DIR / "data"
+DATA_DIR = PROJECT_ROOT.parent / "data"
 
 IMOVEIS_JSON = DATA_DIR / "imoveis_resumo.json"
 
@@ -129,7 +130,7 @@ IMOVEIS_CSV = DATA_DIR / "imoveis.csv"
 
 CELERY_BEAT_SCHEDULE = {
     'importar-imoveis-diariamente-utc': {
-        'task': 'iamoveis.tasks.executar_carga_diaria_imoveis',
+        'task': 'iamoveis.tasks.executar_carga_diaria',
         'schedule': crontab(hour=0, minute=0),
     },
 }
