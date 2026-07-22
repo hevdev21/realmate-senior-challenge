@@ -76,6 +76,17 @@ def processar_mensagem_ia(self, mensagem_id):
         return
 
     conversa = mensagem.conversa
+
+    ultima_mensagem_cliente = (
+        conversa.mensagens
+        .filter(role="customer")
+        .order_by("-timestamp", "-id")
+        .first()
+    )
+
+    if ultima_mensagem_cliente is None or ultima_mensagem_cliente.id != mensagem.id:
+        return
+
     historico = _montar_historico(conversa)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}, *historico]
 
