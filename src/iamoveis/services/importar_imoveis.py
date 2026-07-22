@@ -10,6 +10,8 @@ from iamoveis.models import Imovel
 
 class ImportadorImoveisService:
 
+    CAMPOS_ATUALIZAVEIS = ["preco", "quartos", "descricao", "origem_carga"]
+
     def importar(self, filepath, formato):
         formato = formato.lower()
 
@@ -65,34 +67,75 @@ class ImportadorImoveisService:
 
         return dados
 
+    def _extrair_referencia(self, descricao):
+        match = re.search(
+            r"(?:codigo:|ref:\s*)([A-Z0-9-]+)",
+            descricao,
+            re.IGNORECASE
+        )
+        return match.group(1) if match else "SEM_REF"
+
+    def _chave_dedup(self, item):
+
+        return (item["endereco"], item["bairro"], item["tipo_transacao"])
+
     def _salvar_imoveis(self, dados, formato):
-
-        objetos = []
-
+        processados = []
         for item in dados:
+            referencia = self._extrair_referencia(item["descricao"])
+            origem_carga = f"carga_inicial_{formato} | ref:{referencia}"
+            chave = self._chave_dedup(item)
+            processados.append((chave, item, origem_carga))
 
-            match = re.search(
-                r"(?:codigo:|ref:\s*)([A-Z0-9-]+)",
-                item["descricao"],
-                re.IGNORECASE
-            )
+        chaves = [p[0] for p in processados]
+        enderecos = [c[0] for c in chaves]
+        bairros = [c[1] for c in chaves]
 
-            referencia = match.group(1) if match else "SEM_REF"
+        existentes = Imovel.objects.filter(
+            endereco__in=enderecos,
+            bairro__in=bairros,
+        )
+        existentes_map = {
+            (e.endereco, e.bairro, e.tipo_transacao): e
+            for e in existentes
+        }
 
-            objetos.append(
-                Imovel(
+        para_criar = {}  # chave -> Imovel (evita duplicar dentro do próprio arquivo)
+        para_atualizar = {}  # chave -> Imovel
+
+        for chave, item, origem_carga in processados:
+            existente = existentes_map.get(chave) or para_atualizar.get(chave)
+
+            if existente:
+                existente.preco = item["preco"]
+                existente.quartos = item["quartos"]
+                existente.descricao = item["descricao"]
+                existente.origem_carga = origem_carga
+                para_atualizar[chave] = existente
+                # se estava marcado pra criar (duplicata dentro do arquivo), remove
+                para_criar.pop(chave, None)
+            else:
+                para_criar[chave] = Imovel(
                     tipo_transacao=item["tipo_transacao"],
                     preco=item["preco"],
                     quartos=item["quartos"],
                     bairro=item["bairro"],
                     endereco=item["endereco"],
                     descricao=item["descricao"],
-                    origem_carga=f"carga_inicial_{formato} | ref:{referencia}"
+                    origem_carga=origem_carga,
                 )
-            )
 
         with transaction.atomic():
+            if para_criar:
+                Imovel.objects.bulk_create(list(para_criar.values()))
 
-            Imovel.objects.bulk_create(objetos)
+            if para_atualizar:
+                Imovel.objects.bulk_update(
+                    list(para_atualizar.values()),
+                    self.CAMPOS_ATUALIZAVEIS,
+                )
 
-        return len(objetos)
+        return {
+            "criados": len(para_criar),
+            "atualizados": len(para_atualizar),
+        }

@@ -49,6 +49,7 @@ class Mensagem(models.Model):
         on_delete=models.CASCADE, 
         related_name='mensagens'
     )
+    message_id = models.UUIDField(null=True, blank=True, unique=True, db_index=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     conteudo = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
