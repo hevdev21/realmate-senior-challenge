@@ -48,3 +48,10 @@
   memória e deixa o modelo responder com base nisso. Sem RAG/embeddings,
   pois o dataset é pequeno — evita complexidade desnecessária. Prompt
   instrui a IA a nunca inventar informação fora da base.
+
+
+## Saídas
+
+ - Para finalizar implementei o endpoint de consulta pode telefone, implementei o código do imóvel pelo id mesmo do registro padrão django por praticidade
+ - Fiz a implementação da tipagem, não conhecia esse verificador de tipagem tive que estudar um pouco para implementar mas está de acordo ao script
+ - Implmentei 3 testes para o que acho mais crítico no sistema, webhook, processamento da ia e a regra de debounce, todos passando 100%
