@@ -1,5 +1,5 @@
 from django.db import models
-
+from typing import TYPE_CHECKING
 # Create your models here.
 
 
@@ -31,11 +31,14 @@ class Conversa(models.Model):
         Imovel, 
         related_name='conversas',
         blank=True
-    )
+    ) # type: ignore[var-annotated]
     telefone_cliente = models.CharField(max_length=250, null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', db_index=True)
     last_message_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    if TYPE_CHECKING:
+        mensagens: models.Manager["Mensagem"]
 
 
 class Mensagem(models.Model):
