@@ -1,3 +1,5 @@
+from argparse import ArgumentParser
+from typing import Any
 from django.core.management.base import BaseCommand
 
 from iamoveis.services.importar_imoveis import ImportadorImoveisService
@@ -7,7 +9,7 @@ class Command(BaseCommand):
 
     help = "Importa imóveis"
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
 
         parser.add_argument("--filepath", required=True)
 
@@ -17,7 +19,7 @@ class Command(BaseCommand):
             required=True
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
 
         service = ImportadorImoveisService()
 

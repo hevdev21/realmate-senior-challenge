@@ -1,21 +1,24 @@
 import json
+from typing import cast
 from pathlib import Path
 
 from django.conf import settings
 
-from iamoveis.models import Imovel
+from typing import TypedDict, NotRequired, Literal
+
+from iamoveis.models import Imovel, Conversa
 
 FAQ_PATH = Path(settings.BASE_DIR) / "data" / "perguntas_frequentes.json"
 
 _faq_cache = None
 
 
-def _carregar_faq():
+def _carregar_faq() -> list[dict[str, str]]:
 
     global _faq_cache
     if _faq_cache is None:
         with open(FAQ_PATH, encoding="utf-8") as f:
-            _faq_cache = json.load(f)
+            _faq_cache = cast(list[dict[str, str]], json.load(f))
     return _faq_cache
 
 
@@ -70,17 +73,60 @@ TOOLS_SCHEMA = [
     },
 ]
 
+class ImovelResumo(TypedDict):
+    codigo: int
+    tipo_transacao: str
+    bairro: str
+    preco: str
+    quartos: int
+    endereco: str
 
-def executar_tool(nome, args, conversa):
+
+class BuscaImoveisResultado(TypedDict):
+    encontrados: int
+    imoveis: list[ImovelResumo]
+    mensagem: NotRequired[str]
+
+
+class BuscaImoveisErro(TypedDict):
+    erro: Literal["filtros_insuficientes"]
+    campos_faltantes: list[str]
+    mensagem: str
+
+
+class FaqResultado(TypedDict):
+    perguntas_frequentes: list[dict[str, str]]
+
+
+def executar_tool(
+    nome: str,
+    args: dict[str, object],
+    conversa: Conversa,
+) -> BuscaImoveisResultado | BuscaImoveisErro | FaqResultado | dict[str, str]:
     if nome == "buscar_imoveis":
-        return _buscar_imoveis(conversa=conversa, **args)
+        return _buscar_imoveis(
+            conversa=conversa,
+            codigo=cast("int | None", args.get("codigo")),
+            tipo_transacao=cast("str | None", args.get("tipo_transacao")),
+            bairro=cast("str | None", args.get("bairro")),
+            preco_min=cast("float | None", args.get("preco_min")),
+            preco_max=cast("float | None", args.get("preco_max")),
+            quartos=cast("int | None", args.get("quartos")),
+        )
     if nome == "consultar_perguntas_frequentes":
         return _consultar_faq()
     return {"erro": f"tool '{nome}' desconhecida"}
 
 
-def _buscar_imoveis(conversa, codigo=None, tipo_transacao=None, bairro=None,
-                     preco_min=None, preco_max=None, quartos=None):
+def _buscar_imoveis(
+    conversa: Conversa,
+    codigo: int | None = None,
+    tipo_transacao: str | None = None,
+    bairro: str | None = None,
+    preco_min: float | None = None,
+    preco_max: float | None = None,
+    quartos: int | None = None,
+) -> BuscaImoveisResultado | BuscaImoveisErro:
 
     if codigo is not None:
         imovel = Imovel.objects.filter(pk=codigo).first()
@@ -130,16 +176,16 @@ def _buscar_imoveis(conversa, codigo=None, tipo_transacao=None, bairro=None,
         "imoveis": [
             {
                 "codigo": i.pk,
-                "tipo_transacao": i.tipo_transacao,
-                "bairro": i.bairro,
-                "preco": str(i.preco),
-                "quartos": i.quartos,
-                "endereco": i.endereco,
+                "tipo_transacao": i.tipo_transacao or "",
+                "bairro": i.bairro or "",
+                "preco": str(i.preco) if i.preco is not None else "",
+                "quartos": i.quartos or 0,
+                "endereco": i.endereco or "",
             }
             for i in resultado
         ],
     }
 
 
-def _consultar_faq():
+def _consultar_faq() -> FaqResultado:
     return {"perguntas_frequentes": _carregar_faq()}

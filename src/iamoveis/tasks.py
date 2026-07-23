@@ -1,21 +1,32 @@
-from celery import shared_task
-from iamoveis.services.importar_imoveis import ImportadorImoveisService
+from celery import Task, shared_task
+from iamoveis.services.importar_imoveis import ImportadorImoveisService, ResultadoImportacao
 from celery import group
 from django.conf import settings
 from django.utils import timezone
 import logging
 import json
 
+from openai.types.chat import (
+    ChatCompletionMessageParam,
+    ChatCompletionSystemMessageParam,
+    ChatCompletionToolMessageParam,
+    ChatCompletionToolParam,
+    ChatCompletionUserMessageParam,
+    ChatCompletionAssistantMessageParam,
+    ChatCompletionMessageFunctionToolCall
+)
 from openai import OpenAI
 
-from iamoveis.models import Mensagem
+from typing import cast
+
+from iamoveis.models import Mensagem, Conversa
 from .ia_tools import TOOLS_SCHEMA, executar_tool
 
 logger = logging.getLogger(__name__)
 
-_client = None
+_client: OpenAI | None = None
 
-def _get_client():
+def _get_client() -> OpenAI:
     global _client
     if _client is None:
         _client = OpenAI(
@@ -24,25 +35,27 @@ def _get_client():
         )
     return _client
 
+
 @shared_task
-def executar_importacao_imoveis(filepath, formato):
+def executar_importacao_imoveis(filepath: str, formato: str) -> ResultadoImportacao:
     service = ImportadorImoveisService()
     return service.importar(filepath, formato)
 
 
 @shared_task
-def importar_json():
+def importar_json() -> None:
     service = ImportadorImoveisService()
     service.importar(settings.IMOVEIS_JSON, "json")
 
 
 @shared_task
-def importar_csv():
+def importar_csv() -> None:
     service = ImportadorImoveisService()
     service.importar(settings.IMOVEIS_CSV, "csv")
 
+
 @shared_task
-def executar_carga_diaria():
+def executar_carga_diaria() -> None:
     logger.info("Iniciando carga diária...")
     group(
         importar_json.s(),
@@ -68,14 +81,17 @@ Regras obrigatórias:
   informação — nunca invente uma regra da imobiliária.
 """
 
+TOOLS: list[ChatCompletionToolParam] = cast(list[ChatCompletionToolParam], TOOLS_SCHEMA)
+
+
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
-def processar_mensagem_ia(self, mensagem_id):
+def processar_mensagem_ia(self: Task, mensagem_id: int) -> None:
     try:
         mensagem = Mensagem.objects.select_related("conversa").get(id=mensagem_id)
     except Mensagem.DoesNotExist:
         return
 
-    conversa = mensagem.conversa
+    conversa: Conversa = mensagem.conversa
 
     ultima_mensagem_cliente = (
         conversa.mensagens
@@ -84,11 +100,16 @@ def processar_mensagem_ia(self, mensagem_id):
         .first()
     )
 
-    if ultima_mensagem_cliente is None or ultima_mensagem_cliente.id != mensagem.id:
+    if ultima_mensagem_cliente is None or ultima_mensagem_cliente.pk != mensagem.pk:
         return
 
     historico = _montar_historico(conversa)
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}, *historico]
+
+    system_message: ChatCompletionSystemMessageParam = {
+        "role": "system",
+        "content": SYSTEM_PROMPT,
+    }
+    messages: list[ChatCompletionMessageParam] = [system_message, *historico]
 
     try:
         resposta_final = _executar_conversa(messages, conversa)
@@ -104,41 +125,57 @@ def processar_mensagem_ia(self, mensagem_id):
     conversa.save(update_fields=["last_message_at"])
 
 
-def _montar_historico(conversa, limite=20):
-    role_map = {"customer": "user", "assistant": "assistant"}
+def _montar_historico(conversa: Conversa, limite: int = 20) -> list[ChatCompletionMessageParam]:
     mensagens = conversa.mensagens.order_by("-timestamp")[:limite]
-    return [
-        {"role": role_map[m.role], "content": m.conteudo}
-        for m in reversed(mensagens)
-    ]
+
+    historico: list[ChatCompletionMessageParam] = []
+    for m in reversed(list(mensagens)):
+        if m.role == "customer":
+            historico.append(
+                cast(ChatCompletionUserMessageParam, {"role": "user", "content": m.conteudo})
+            )
+        else:
+            historico.append(
+                cast(ChatCompletionAssistantMessageParam, {"role": "assistant", "content": m.conteudo})
+            )
+    return historico
 
 
-def _executar_conversa(messages, conversa, max_turnos=5):
+def _executar_conversa(
+    messages: list[ChatCompletionMessageParam],
+    conversa: Conversa,
+    max_turnos: int = 5,
+) -> str:
     client = _get_client()
+
     for _ in range(max_turnos):
         response = client.chat.completions.create(
             model=MODELO_IA,
             messages=messages,
-            tools=TOOLS_SCHEMA,
+            tools=TOOLS,
             tool_choice="auto",
         )
         message = response.choices[0].message
 
         if not message.tool_calls:
-            return message.content
+            return message.content or ""
 
-        messages.append(message)
+        messages.append(cast(ChatCompletionMessageParam, message.model_dump(exclude_none=True)))
 
         for tool_call in message.tool_calls:
+            if not isinstance(tool_call, ChatCompletionMessageFunctionToolCall):
+                continue
+
             nome = tool_call.function.name
-            args = json.loads(tool_call.function.arguments or "{}")
+            args = cast(dict[str, object], json.loads(tool_call.function.arguments or "{}"))
 
             resultado = executar_tool(nome, args, conversa)
 
-            messages.append({
+            tool_message: ChatCompletionToolMessageParam = {
                 "role": "tool",
                 "tool_call_id": tool_call.id,
                 "content": json.dumps(resultado, ensure_ascii=False),
-            })
+            }
+            messages.append(tool_message)
 
-    return "Desculpe, não consegui concluir sua solicitação no momento. Um atendente vai te ajudar em breve."
+    return "Desculpe, não consegui concluir sua solicitação no momento."
